@@ -41,6 +41,14 @@ curl -X POST https://life-production-1b7b.up.railway.app/say \
 # Response: {"request_id":"test-123","wrote":true,"speaker":"REBECCA","text":"...","scene_refreshed":false}
 ```
 
+### Mug Boundary Test
+```bash
+curl -X POST https://life-production-1b7b.up.railway.app/say \
+  -H "Content-Type: application/json" \
+  -d '{"request_id": "mug-0001", "speaker": "GEORGE", "text": "I used your mug."}'
+# Response: Rebecca reacts with boundary enforcement + irritation
+```
+
 ### Beat (Autonomous Tick)
 ```bash
 curl -X POST https://life-production-1b7b.up.railway.app/beat \
@@ -64,4 +72,4 @@ curl -X POST https://life-production-1b7b.up.railway.app/say \
 
 ## Constraints
 
-Only `constraints/00_KERNEL.md` is loaded at startup. All other constraint files are ignored.
+`constraints/00_KERNEL.md` and `constraints/01_REBECCA_MICRO.md` are loaded at startup. All other constraint files are ignored.
