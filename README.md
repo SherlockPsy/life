@@ -12,7 +12,7 @@ Semantic memory system with Qdrant vector search and Postgres as source of truth
 ## Environment Variables
 
 ```
-DATABASE_PUBLIC_URL=postgresql://...
+DATABASE_URL=postgresql://...    # required
 QDRANT_URL=http://qdrant.railway.internal:6333
 VENICE_API_KEY=...
 VENICE_BASE_URL=https://api.venice.ai/api/v1
