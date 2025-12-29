@@ -33,3 +33,9 @@ dist/
 *.egg-info/
 __pycache__/
 .pytest_cache/
+
+# Package lock
+package-lock.json
+
+# Railway
+.railway/
