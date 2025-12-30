@@ -22,6 +22,107 @@ const app = Fastify({ logger: true });
 let CONSTRAINTS = "";
 let dbAvailable = false;
 
+// -------------------- SIMPLE UI (NO EXTRA PACKAGES) --------------------
+
+const UI_HTML = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Life</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:#111; color:#eee; margin:0; padding:18px; }
+    h1 { font-size: 18px; margin: 0 0 12px 0; font-weight: 600; }
+    #log { white-space: pre-wrap; background:#181818; border:1px solid #2a2a2a; padding:12px; border-radius:10px; min-height: 260px; }
+    textarea { width:100%; height:90px; margin-top:12px; padding:10px; border-radius:10px; border:1px solid #2a2a2a; background:#141414; color:#eee; font-size:14px; }
+    button { margin-top:10px; padding:10px 14px; border-radius:10px; border:1px solid #2a2a2a; background:#1f1f1f; color:#eee; cursor:pointer; }
+    button:disabled { opacity:0.6; cursor:not-allowed; }
+    .row { display:flex; gap:10px; align-items:center; margin-top:10px; }
+    .hint { font-size:12px; opacity:0.75; margin-top:8px; }
+    .pill { display:inline-block; font-size:12px; opacity:0.8; border:1px solid #2a2a2a; padding:2px 8px; border-radius:999px; }
+  </style>
+</head>
+<body>
+  <h1>Life <span class="pill">UI</span></h1>
+  <div id="log"></div>
+  <textarea id="input" placeholder="Type here. Press Ctrl+Enter to send."></textarea>
+  <div class="row">
+    <button id="sendBtn" onclick="send()">Send</button>
+    <button onclick="beat()">Beat</button>
+  </div>
+  <div class="hint">This is a minimal interface. It calls <code>/say</code> and <code>/beat</code> on the same server.</div>
+
+<script>
+const logEl = document.getElementById("log");
+const inputEl = document.getElementById("input");
+const sendBtn = document.getElementById("sendBtn");
+
+function append(text) {
+  if (!text) return;
+  logEl.textContent += (logEl.textContent ? "\\n\\n" : "") + text;
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+async function post(path, body) {
+  const res = await fetch(path, {
+    method: "POST",
+    headers: { "Content-Type":"application/json" },
+    body: JSON.stringify(body || {})
+  });
+  const json = await res.json();
+  return { res, json };
+}
+
+async function send() {
+  const text = (inputEl.value || "").trim();
+  if (!text) return;
+
+  sendBtn.disabled = true;
+  inputEl.value = "";
+
+  try {
+    const request_id = "ui-say-" + crypto.randomUUID();
+    const { json } = await post("/say", { request_id, text });
+
+    if (json && json.wrote && json.text) {
+      append(json.text);
+    }
+  } catch (e) {
+    append("[UI ERROR] " + String(e));
+  } finally {
+    sendBtn.disabled = false;
+    inputEl.focus();
+  }
+}
+
+async function beat() {
+  try {
+    const request_id = "ui-beat-" + crypto.randomUUID();
+    const { json } = await post("/beat", { request_id });
+
+    if (json && json.wrote && json.text) {
+      append(json.text);
+    }
+  } catch (e) {
+    append("[UI ERROR] " + String(e));
+  }
+}
+
+inputEl.addEventListener("keydown", (ev) => {
+  if (ev.ctrlKey && ev.key === "Enter") send();
+});
+</script>
+</body>
+</html>`;
+
+// UI route
+app.get("/", async (request, reply) => {
+  reply.type("text/html; charset=utf-8");
+  return UI_HTML;
+});
+
+// -------------------- COGNITION PROMPT --------------------
+
 // Build system prompt for DeepSeek cognition
 function buildSystemPrompt(scenePackage, retrievedBlocks, constraints) {
   const blockContext = retrievedBlocks
@@ -30,18 +131,22 @@ function buildSystemPrompt(scenePackage, retrievedBlocks, constraints) {
 
   const parts = [];
 
+  // Base control rules from constraints (identity comes from retrieval/scene)
   if (constraints) {
     parts.push(constraints);
   }
 
+  // Scene context
   if (scenePackage) {
     parts.push(`SCENE:\n${scenePackage}`);
   }
 
+  // Retrieved memory
   if (blockContext) {
     parts.push(`MEMORY:\n${blockContext}`);
   }
 
+  // JSON output format
   parts.push(`OUTPUT FORMAT (strict JSON):
 {
   "speaker": "REBECCA",
@@ -67,6 +172,7 @@ async function retrieveContext(queryText) {
       getRecentBlocks(8),
     ]);
 
+    // Merge and dedupe by id
     const seen = new Set();
     const merged = [];
 
@@ -80,6 +186,7 @@ async function retrieveContext(queryText) {
     return merged;
   } catch (error) {
     console.error("Context retrieval error:", error.message);
+    // Fallback to just recent blocks
     return getRecentBlocks(8);
   }
 }
@@ -89,6 +196,7 @@ async function writeBlocks(blocks, requestId) {
   for (const block of blocks) {
     const id = uuidv4();
 
+    // Write to Postgres
     await insertBlock({
       id,
       source: block.source,
@@ -97,6 +205,7 @@ async function writeBlocks(blocks, requestId) {
       request_id: requestId,
     });
 
+    // Generate embedding and upsert to Qdrant
     try {
       const embedding = await generateEmbedding(block.text);
       await upsertPoint(id, embedding, {
@@ -126,14 +235,17 @@ app.post("/say", async (request, reply) => {
     const { text, request_id } = request.body || {};
     const requestId = request_id || uuidv4();
 
+    // Idempotency check
     const existingResponse = await getRequestLog(requestId);
     if (existingResponse) {
       return existingResponse;
     }
 
+    // Retrieve context using user text
     const retrievedBlocks = await retrieveContext(text || "");
     const scenePackage = await getScenePackage();
 
+    // Run cognition
     const systemPrompt = buildSystemPrompt(
       scenePackage,
       retrievedBlocks,
@@ -143,6 +255,7 @@ app.post("/say", async (request, reply) => {
 
     const cognitionResult = await runCognition(systemPrompt, userPrompt);
 
+    // Validate cognition result
     if (cognitionResult.wrote) {
       if (!cognitionResult.speaker || !cognitionResult.outward_text) {
         reply.code(500);
@@ -154,7 +267,6 @@ app.post("/say", async (request, reply) => {
     const blocksToWrite = cognitionResult.public_blocks || cognitionResult.blocks_to_write || [];
     const gate = lawGateValidateTextParts([
       cognitionResult.outward_text || "",
-      // Include block text (public/private if you add later)
       ...blocksToWrite.map((b) => b.text || ""),
       cognitionResult.scene_update || ""
     ]);
@@ -166,28 +278,29 @@ app.post("/say", async (request, reply) => {
         speaker: "",
         text: "",
         scene_refreshed: false,
-        // optional: keep reasons out of outward response (silence)
       };
       await insertRequestLog(requestId, response);
       return response;
     }
 
-    // Write blocks if any (only after gate passes)
+    // Write blocks if any
     if (blocksToWrite.length > 0) {
       await writeBlocks(blocksToWrite, requestId);
     }
 
-    // Update scene if changed (only after gate passes)
+    // Update scene if changed
     let sceneRefreshed = false;
     if (cognitionResult.scene_update) {
       await updateScenePackage(cognitionResult.scene_update);
       sceneRefreshed = true;
     }
 
+    // Render output
     const renderedText = cognitionResult.wrote
       ? await renderText(cognitionResult.outward_text)
       : "";
 
+    // Build response
     const response = {
       request_id: requestId,
       wrote: cognitionResult.wrote || false,
@@ -196,6 +309,7 @@ app.post("/say", async (request, reply) => {
       scene_refreshed: sceneRefreshed,
     };
 
+    // Log for idempotency
     await insertRequestLog(requestId, response);
 
     return response;
@@ -217,16 +331,20 @@ app.post("/beat", async (request, reply) => {
     const { request_id } = request.body || {};
     const requestId = request_id || uuidv4();
 
+    // Idempotency check
     const existingResponse = await getRequestLog(requestId);
     if (existingResponse) {
       return existingResponse;
     }
 
+    // Get current scene
     const scenePackage = await getScenePackage();
 
+    // Retrieve context using "BEAT " + scene
     const queryText = `BEAT ${scenePackage || "idle state"}`;
     const retrievedBlocks = await retrieveContext(queryText);
 
+    // Run cognition
     const systemPrompt = buildSystemPrompt(
       scenePackage,
       retrievedBlocks,
@@ -238,6 +356,7 @@ app.post("/beat", async (request, reply) => {
 
     const cognitionResult = await runCognition(systemPrompt, userPrompt);
 
+    // Validate cognition result
     if (cognitionResult.wrote) {
       if (!cognitionResult.speaker || !cognitionResult.outward_text) {
         reply.code(500);
@@ -265,20 +384,24 @@ app.post("/beat", async (request, reply) => {
       return response;
     }
 
+    // Write blocks if any
     if (blocksToWrite.length > 0) {
       await writeBlocks(blocksToWrite, requestId);
     }
 
+    // Update scene if changed
     let sceneRefreshed = false;
     if (cognitionResult.scene_update) {
       await updateScenePackage(cognitionResult.scene_update);
       sceneRefreshed = true;
     }
 
+    // Render output
     const renderedText = cognitionResult.wrote
       ? await renderText(cognitionResult.outward_text)
       : "";
 
+    // Build response
     const response = {
       request_id: requestId,
       wrote: cognitionResult.wrote || false,
@@ -287,6 +410,7 @@ app.post("/beat", async (request, reply) => {
       scene_refreshed: sceneRefreshed,
     };
 
+    // Log for idempotency
     await insertRequestLog(requestId, response);
 
     return response;
@@ -300,10 +424,11 @@ app.post("/beat", async (request, reply) => {
 // Startup
 async function start() {
   try {
-    // Load constraints (NOW includes ALL authoritative law documents)
+    // Load constraints
     CONSTRAINTS = loadConstraints();
     setRendererConstraints(CONSTRAINTS);
 
+    // Ping database
     try {
       await pingDb();
       dbAvailable = true;
@@ -313,6 +438,7 @@ async function start() {
       dbAvailable = false;
     }
 
+    // Ensure Qdrant collection exists (handles its own errors)
     await ensureCollection();
 
     const port = Number(process.env.PORT || 3000);
