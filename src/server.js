@@ -15,6 +15,7 @@ import { generateEmbedding } from "./embeddings.js";
 import { runCognition } from "./cognition.js";
 import { renderText, setRendererConstraints } from "./renderer.js";
 import { loadConstraints } from "./constraints.js";
+import { lawGateValidateTextParts } from "./law/law_gate.js";
 
 const app = Fastify({ logger: true });
 
@@ -28,23 +29,19 @@ function buildSystemPrompt(scenePackage, retrievedBlocks, constraints) {
     .join("\n");
 
   const parts = [];
-  
-  // Base control rules from constraints (identity comes from retrieval/scene)
+
   if (constraints) {
     parts.push(constraints);
   }
-  
-  // Scene context
+
   if (scenePackage) {
     parts.push(`SCENE:\n${scenePackage}`);
   }
-  
-  // Retrieved memory
+
   if (blockContext) {
     parts.push(`MEMORY:\n${blockContext}`);
   }
-  
-  // JSON output format
+
   parts.push(`OUTPUT FORMAT (strict JSON):
 {
   "speaker": "REBECCA",
@@ -54,7 +51,7 @@ function buildSystemPrompt(scenePackage, retrievedBlocks, constraints) {
   "wrote": true|false,
   "scene_refreshed": false
 }`);
-  
+
   return parts.join("\n\n");
 }
 
@@ -70,7 +67,6 @@ async function retrieveContext(queryText) {
       getRecentBlocks(8),
     ]);
 
-    // Merge and dedupe by id
     const seen = new Set();
     const merged = [];
 
@@ -84,7 +80,6 @@ async function retrieveContext(queryText) {
     return merged;
   } catch (error) {
     console.error("Context retrieval error:", error.message);
-    // Fallback to just recent blocks
     return getRecentBlocks(8);
   }
 }
@@ -94,7 +89,6 @@ async function writeBlocks(blocks, requestId) {
   for (const block of blocks) {
     const id = uuidv4();
 
-    // Write to Postgres
     await insertBlock({
       id,
       source: block.source,
@@ -103,7 +97,6 @@ async function writeBlocks(blocks, requestId) {
       request_id: requestId,
     });
 
-    // Generate embedding and upsert to Qdrant
     try {
       const embedding = await generateEmbedding(block.text);
       await upsertPoint(id, embedding, {
@@ -128,22 +121,19 @@ app.post("/say", async (request, reply) => {
     reply.code(503);
     return { error: "db_unavailable" };
   }
-  
+
   try {
     const { text, request_id } = request.body || {};
     const requestId = request_id || uuidv4();
 
-    // Idempotency check
     const existingResponse = await getRequestLog(requestId);
     if (existingResponse) {
       return existingResponse;
     }
 
-    // Retrieve context using user text
-    const retrievedBlocks = await retrieveContext(text);
+    const retrievedBlocks = await retrieveContext(text || "");
     const scenePackage = await getScenePackage();
 
-    // Run cognition
     const systemPrompt = buildSystemPrompt(
       scenePackage,
       retrievedBlocks,
@@ -153,7 +143,6 @@ app.post("/say", async (request, reply) => {
 
     const cognitionResult = await runCognition(systemPrompt, userPrompt);
 
-    // Validate cognition result
     if (cognitionResult.wrote) {
       if (!cognitionResult.speaker || !cognitionResult.outward_text) {
         reply.code(500);
@@ -161,25 +150,44 @@ app.post("/say", async (request, reply) => {
       }
     }
 
-    // Write blocks if any
+    // LAW GATE (must run before writes, before scene update, before render)
     const blocksToWrite = cognitionResult.public_blocks || cognitionResult.blocks_to_write || [];
+    const gate = lawGateValidateTextParts([
+      cognitionResult.outward_text || "",
+      // Include block text (public/private if you add later)
+      ...blocksToWrite.map((b) => b.text || ""),
+      cognitionResult.scene_update || ""
+    ]);
+
+    if (!gate.ok) {
+      const response = {
+        request_id: requestId,
+        wrote: false,
+        speaker: "",
+        text: "",
+        scene_refreshed: false,
+        // optional: keep reasons out of outward response (silence)
+      };
+      await insertRequestLog(requestId, response);
+      return response;
+    }
+
+    // Write blocks if any (only after gate passes)
     if (blocksToWrite.length > 0) {
       await writeBlocks(blocksToWrite, requestId);
     }
 
-    // Update scene if changed
+    // Update scene if changed (only after gate passes)
     let sceneRefreshed = false;
     if (cognitionResult.scene_update) {
       await updateScenePackage(cognitionResult.scene_update);
       sceneRefreshed = true;
     }
 
-    // Render output
-    const renderedText = cognitionResult.wrote 
+    const renderedText = cognitionResult.wrote
       ? await renderText(cognitionResult.outward_text)
       : "";
 
-    // Build response
     const response = {
       request_id: requestId,
       wrote: cognitionResult.wrote || false,
@@ -188,7 +196,6 @@ app.post("/say", async (request, reply) => {
       scene_refreshed: sceneRefreshed,
     };
 
-    // Log for idempotency
     await insertRequestLog(requestId, response);
 
     return response;
@@ -205,25 +212,21 @@ app.post("/beat", async (request, reply) => {
     reply.code(503);
     return { error: "db_unavailable" };
   }
-  
+
   try {
     const { request_id } = request.body || {};
     const requestId = request_id || uuidv4();
 
-    // Idempotency check
     const existingResponse = await getRequestLog(requestId);
     if (existingResponse) {
       return existingResponse;
     }
 
-    // Get current scene
     const scenePackage = await getScenePackage();
 
-    // Retrieve context using "BEAT " + scene
     const queryText = `BEAT ${scenePackage || "idle state"}`;
     const retrievedBlocks = await retrieveContext(queryText);
 
-    // Run cognition
     const systemPrompt = buildSystemPrompt(
       scenePackage,
       retrievedBlocks,
@@ -235,7 +238,6 @@ app.post("/beat", async (request, reply) => {
 
     const cognitionResult = await runCognition(systemPrompt, userPrompt);
 
-    // Validate cognition result
     if (cognitionResult.wrote) {
       if (!cognitionResult.speaker || !cognitionResult.outward_text) {
         reply.code(500);
@@ -243,25 +245,40 @@ app.post("/beat", async (request, reply) => {
       }
     }
 
-    // Write blocks if any
+    // LAW GATE (must run before writes, before scene update, before render)
     const blocksToWrite = cognitionResult.public_blocks || cognitionResult.blocks_to_write || [];
+    const gate = lawGateValidateTextParts([
+      cognitionResult.outward_text || "",
+      ...blocksToWrite.map((b) => b.text || ""),
+      cognitionResult.scene_update || ""
+    ]);
+
+    if (!gate.ok) {
+      const response = {
+        request_id: requestId,
+        wrote: false,
+        speaker: "",
+        text: "",
+        scene_refreshed: false,
+      };
+      await insertRequestLog(requestId, response);
+      return response;
+    }
+
     if (blocksToWrite.length > 0) {
       await writeBlocks(blocksToWrite, requestId);
     }
 
-    // Update scene if changed
     let sceneRefreshed = false;
     if (cognitionResult.scene_update) {
       await updateScenePackage(cognitionResult.scene_update);
       sceneRefreshed = true;
     }
 
-    // Render output
-    const renderedText = cognitionResult.wrote 
+    const renderedText = cognitionResult.wrote
       ? await renderText(cognitionResult.outward_text)
       : "";
 
-    // Build response
     const response = {
       request_id: requestId,
       wrote: cognitionResult.wrote || false,
@@ -270,7 +287,6 @@ app.post("/beat", async (request, reply) => {
       scene_refreshed: sceneRefreshed,
     };
 
-    // Log for idempotency
     await insertRequestLog(requestId, response);
 
     return response;
@@ -284,11 +300,10 @@ app.post("/beat", async (request, reply) => {
 // Startup
 async function start() {
   try {
-    // Load constraints
+    // Load constraints (NOW includes ALL authoritative law documents)
     CONSTRAINTS = loadConstraints();
     setRendererConstraints(CONSTRAINTS);
 
-    // Ping database
     try {
       await pingDb();
       dbAvailable = true;
@@ -298,7 +313,6 @@ async function start() {
       dbAvailable = false;
     }
 
-    // Ensure Qdrant collection exists (handles its own errors)
     await ensureCollection();
 
     const port = Number(process.env.PORT || 3000);

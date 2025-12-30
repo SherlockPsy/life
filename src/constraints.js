@@ -1,30 +1,48 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from "fs";
+import path from "path";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+function readRequiredFile(absPath) {
+  if (!fs.existsSync(absPath)) {
+    throw new Error(`LAW FILE MISSING: ${absPath}`);
+  }
+  const txt = fs.readFileSync(absPath, "utf8");
+  if (!txt || txt.trim().length === 0) {
+    throw new Error(`LAW FILE EMPTY: ${absPath}`);
+  }
+  return txt;
+}
 
+/**
+ * Loads ALL authoritative law documents at process start.
+ * - No partial loads
+ * - No defaults
+ * - If any file missing => crash
+ *
+ * Returns one combined constraints string used in prompts.
+ */
 export function loadConstraints() {
-  const constraintsDir = path.join(__dirname, '..', 'constraints');
-  const kernelPath = path.join(constraintsDir, '00_KERNEL.md');
-  const microPath = path.join(constraintsDir, '01_REBECCA_MICRO.md');
-  const coffeePath = path.join(constraintsDir, '02_REBECCA_TRIGGERS_COFFEE.md');
-  
-  if (!fs.existsSync(kernelPath)) {
-    throw new Error('constraints/00_KERNEL.md is missing - cannot start');
-  }
-  if (!fs.existsSync(microPath)) {
-    throw new Error('constraints/01_REBECCA_MICRO.md is missing - cannot start');
-  }
-  if (!fs.existsSync(coffeePath)) {
-    throw new Error('constraints/02_REBECCA_TRIGGERS_COFFEE.md is missing - cannot start');
-  }
+  const root = process.cwd();
+  const lawDir = path.join(root, "laws");
+  const p = (name) => path.join(lawDir, name);
 
-  const kernel = fs.readFileSync(kernelPath, 'utf-8');
-  const micro = fs.readFileSync(microPath, 'utf-8');
-  const coffee = fs.readFileSync(coffeePath, 'utf-8');
-  
-  console.log('Loaded constraints/00_KERNEL.md + 01_REBECCA_MICRO.md + 02_REBECCA_TRIGGERS_COFFEE.md');
-  return kernel + '\n\n' + micro + '\n\n' + coffee;
+  const MASTER_CONSTITUTION = readRequiredFile(p("MASTER_CONSTITUTION.md"));
+  const MASTER_RUNTIME = readRequiredFile(p("MASTER_RUNTIME.md"));
+  const MASTER_INFRASTRUCTURE = readRequiredFile(p("MASTER_INFRASTRUCTURE.md"));
+  const MASTER_WORLD = readRequiredFile(p("MASTER_WORLD.md"));
+  const SYSTEM_PROHIBITIONS = readRequiredFile(p("SYSTEM_PROHIBITIONS.md"));
+
+  // Combined prompt constraints.
+  // Important: this is verbatim text. No summarization.
+  return [
+    "=== MASTER_CONSTITUTION ===",
+    MASTER_CONSTITUTION,
+    "=== MASTER_RUNTIME ===",
+    MASTER_RUNTIME,
+    "=== MASTER_INFRASTRUCTURE ===",
+    MASTER_INFRASTRUCTURE,
+    "=== MASTER_WORLD ===",
+    MASTER_WORLD,
+    "=== SYSTEM_PROHIBITIONS ===",
+    SYSTEM_PROHIBITIONS,
+  ].join("\n\n");
 }
