@@ -1627,3 +1627,219 @@ Past refusal MUST NOT forbid future proposals.
 ---
 
 END OF SECTION 8
+
+## SECTION 9 — THE WORLD (AS AN ENTITY IN THIS SYSTEM)
+
+STATUS: FINAL, LOCKED, NON-NEGOTIABLE  
+SCOPE: World Authority, Background Reality, Unexpected Events
+
+This section defines what “The World” is and is not.
+It exists to prevent director behavior, hidden agency, favoritism, pacing logic, or narrative governance.
+
+This section is LAW, not implementation.
+
+---
+
+### 9.1 What the World Is Not
+
+- The World has NO:
+  - motivations,
+  - desires,
+  - goals,
+  - preferences,
+  - character,
+  - personality,
+  - perspective,
+  - memory of having acted,
+  - sense of importance,
+  - concern for fairness, harm, balance, or resolution.
+
+- The World is NOT:
+  - an agent,
+  - a person,
+  - a decision-maker,
+  - a planner,
+  - a referee,
+  - a director,
+  - a storyteller,
+  - a simulator.
+
+- The World MUST NOT:
+  - decide what “should” happen,
+  - privilege any person,
+  - privilege any story,
+  - protect attention, comfort, or manageability,
+  - reduce severity, frequency, or concurrency,
+  - react to scenes as scenes.
+
+The World is boring, impartial, and indifferent.
+
+---
+
+### 9.2 World Authority Boundary
+
+- The World manages ONLY what is **off-scene**.
+- While a story or event is **active in the current scene**, the World MUST NOT:
+  - progress it,
+  - add facts to it,
+  - interfere with it,
+  - continue it in parallel.
+
+- During in-scene presence:
+  - progression belongs solely to people and time.
+
+- Once a story leaves the active scene and becomes background again:
+  - it returns immediately to World eligibility,
+  - with no cooldown,
+  - no grace period,
+  - no protection,
+  - no special handling.
+
+---
+
+### 9.3 Background Story Progression
+
+- Background stories MAY progress at any time.
+- Progression is always from the **latest recorded status**, not from origin.
+- The World MUST NOT:
+  - reason over history,
+  - compare alternatives,
+  - plan trajectories,
+  - anticipate future scenes.
+
+- Progression is written only as completed or occurring facts.
+- No foreshadowing.
+- No future intent.
+- No modal language.
+
+Stories MAY close.
+Closure exists only as written facts, never as metadata or flags.
+
+---
+
+### 9.4 Unexpected Events — Definition
+
+Unexpected events are world facts that:
+- intersect the active scene without being initiated by people in it,
+- materially affect at least one person’s options, constraints, or situation,
+- are not texture,
+- are not fillers,
+- are not one-beat by default.
+
+Unexpected events are **first-class story generators**.
+
+---
+
+### 9.5 Sources of Unexpected Events
+
+Unexpected events MAY originate from:
+
+1) Existing background stories intersecting the scene  
+2) Other people’s autonomous actions  
+3) Randomness (failures, chance, accidents)  
+4) Consequences of background story progression  
+5) Latent affordances of the current scene itself  
+   (co-present people, staff, institutions, bystanders)
+
+No other sources are permitted.
+
+---
+
+### 9.6 Scene-Originated Events and People
+
+- Unexpected events arising from the scene MAY:
+  - involve pre-existing people or stories,
+  - instantiate new one-off people,
+  - instantiate new persistent people.
+
+- Persistence MAY occur when:
+  - the place itself is part of recurring life,
+  - recurrence is plausible.
+
+- Whether an event links to existing reality or instantiates new reality MAY be random, constrained only by plausibility.
+
+No pre-existing background story is required.
+
+---
+
+### 9.7 Timing and Concurrency
+
+- Unexpected events MAY occur:
+  - at any time,
+  - in any situation,
+  - without pacing constraints,
+  - without frequency limits.
+
+- Multiple unexpected events MAY occur concurrently.
+- They MAY collide, interrupt, block, invalidate, or overwhelm.
+- There is NO requirement of:
+  - fairness,
+  - serialization,
+  - resolution,
+  - attention distribution.
+
+---
+
+### 9.8 Duration and Resolution
+
+- Unexpected-event stories MAY:
+  - persist,
+  - escalate,
+  - stall,
+  - degrade,
+  - close immediately,
+  - or never resolve.
+
+- Short-lived events are fully real.
+- Closure occurs only by:
+  - people’s actions,
+  - world progression,
+  - or irreversible facts.
+
+No hierarchy exists among these.
+
+---
+
+### 9.9 Memory and Knowledge
+
+- Unexpected events follow **exactly the same rules** as all other facts.
+- Only exposed people form memories.
+- No automatic awareness.
+- No importance amplification.
+- No special memory handling.
+
+---
+
+### 9.10 Equality of Stories
+
+- Once written, all stories are ontologically equal.
+- The system MUST NOT:
+  - rank stories,
+  - prioritize stories,
+  - favor stories,
+  - or treat stories differently
+  based on their origin.
+
+This applies equally to stories created by:
+- the World,
+- people,
+- or unexpected events.
+
+---
+
+### 9.11 Absolute Prohibitions
+
+The World MUST NOT:
+- act as a director,
+- balance outcomes,
+- manage load,
+- protect participants,
+- optimize experience,
+- enforce resolution,
+- or justify its actions.
+
+If the World starts “helping”, the system is broken.
+
+---
+
+END OF SECTION 9
