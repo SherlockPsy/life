@@ -4,6 +4,7 @@ const { Pool } = require('pg');
 const { v4: uuidv4 } = require('uuid');
 const Engine2 = require('./engines/ENGINE_2_BEAT_AND_OPPORTUNITY_COORDINATOR/core');
 const Engine3 = require('./engines/ENGINE_3_TIME_AND_CALENDAR_ENGINE/core');
+const Engine5 = require('./engines/ENGINE_5_SCENE_ANCHOR_AND_REHYDRATION_ENGINE/core');
 
 const app = express();
 app.use(bodyParser.json());
@@ -65,6 +66,10 @@ app.post('/invocations', async (req, res) => {
     // C. Coordinate Beat (Engine 2)
     // We pass the resolved time, Engine 2 does NOT coordinate it.
     const beatContext = await Engine2.handleBeat(client, envelope, worldTime);
+
+    // PHASE 7: Engine 5 Rehydration Check
+    // Check if we need to rehydrate context at this beat boundary.
+    await Engine5.handleBeatBoundary(client, requestId, worldTime);
 
     // D. Construct Write Bundle (Phase 4: Echo Operator Input)
     const bundleId = uuidv4();
