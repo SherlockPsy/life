@@ -24,25 +24,26 @@ Scene anchors are NATURAL LANGUAGE ONLY.
     "used_entry_ids": ["string"]
   }
 }
-
-
-⸻
-
-2) MUST Rules
-	•	text MUST be natural language only.
-	•	provenance.used_entry_ids MUST reference ledger sources used.
-	•	Scene anchors MUST NOT contain labels/state variables/numeric fields as “world state”.
+```
 
 ⸻
 
-3) MUST NOT Rules
-	•	MUST NOT include “rehydration” meta language.
-	•	MUST NOT include hidden directive content (“make it dramatic”, “keep it interesting”).
+## 2) MUST Rules
+- text MUST be natural language only.
+- provenance.used_entry_ids MUST reference ledger sources used.
+- Scene anchors MUST NOT contain labels/state variables/numeric fields as “world state”.
 
 ⸻
 
-4) Valid Example (Sketch)
+## 3) MUST NOT Rules
+- MUST NOT include “rehydration” meta language.
+- MUST NOT include hidden directive content (“make it dramatic”, “keep it interesting”).
 
+⸻
+
+## 4) Valid Example
+
+```json
 {
   "scene_anchor_id":"sa:00000001",
   "request_id":"mvp-00000020",
@@ -50,7 +51,7 @@ Scene anchors are NATURAL LANGUAGE ONLY.
   "text":"You are in bed. Morning light spills across the room. Rebecca is beside you, half-awake. The air is quiet and close.",
   "provenance":{"used_entry_ids":["e:00000001","e:00000002","e:00000003"]}
 }
-
+```
 
 ⸻
 

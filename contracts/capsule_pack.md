@@ -1,10 +1,3 @@
-
-
----
-
-## `/contracts/capsule_pack.md`
-
-```md
 # Contract: Capsule Pack (Per-Person Continuity View)
 STATUS: BINDING
 SCOPE: Any per-person capsule assembled for continuity and behavior grounding.
@@ -37,29 +30,30 @@ Capsules are NATURAL LANGUAGE SECTIONS with explicit provenance.
     }
   ]
 }
-
-
-⸻
-
-2) MUST Rules
-	•	SOURCE_EXCERPTS section MUST exist.
-	•	SOURCE_EXCERPTS.text MUST be composed of verbatim excerpts only (may be concatenated, but excerpts must be exact).
-	•	OPTIONAL_DERIVED is allowed, but:
-	•	MUST be clearly non-authoritative,
-	•	MUST carry provenance,
-	•	MUST NOT introduce new facts.
+```
 
 ⸻
 
-3) MUST NOT Rules
-	•	MUST NOT store hidden semantic state (no meters, no numeric stats).
-	•	MUST NOT invent biography, preferences, motives, trauma, etc., unless present in written evidence.
-	•	MUST NOT “correct” contradictions; contradictions remain.
+## 2) MUST Rules
+- SOURCE_EXCERPTS section MUST exist.
+- SOURCE_EXCERPTS.text MUST be composed of verbatim excerpts only (may be concatenated, but excerpts must be exact).
+- OPTIONAL_DERIVED is allowed, but:
+    - MUST be clearly non-authoritative,
+    - MUST carry provenance,
+    - MUST NOT introduce new facts.
 
 ⸻
 
-4) Valid Example (Sketch)
+## 3) MUST NOT Rules
+- MUST NOT store hidden semantic state (no meters, no numeric stats).
+- MUST NOT invent biography, preferences, motives, trauma, etc., unless present in written evidence.
+- MUST NOT “correct” contradictions; contradictions remain.
 
+⸻
+
+## 4) Valid Example
+
+```json
 {
   "capsule_id":"cap:REBECCA:v1",
   "person_id":"REBECCA",
@@ -77,7 +71,7 @@ Capsules are NATURAL LANGUAGE SECTIONS with explicit provenance.
     }
   ]
 }
-
+```
 
 ⸻
 
