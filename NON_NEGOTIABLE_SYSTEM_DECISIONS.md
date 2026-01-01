@@ -240,18 +240,30 @@ Time exists even when nothing is rendered.
 
 ---
 
-## 2.4 Explicit Time Overrides by George
+### 2.4 Explicit Time Advancement Declarations
 
-- George MAY declare a new time explicitly.
-- Examples include (examples only):
-  - “Two hours later”
-  - “I wake up and it is 07:30”
-- When George declares time:
-  - the world clock updates to that time,
-  - all scheduled events are evaluated against it.
-- The system MUST NOT reinterpret or soften the declaration.
+- George may explicitly declare an **intent to advance time**.
+- A declared time advancement represents a request for temporal progression,
+  not a guarantee of uninterrupted passage.
 
-George’s declaration is authoritative.
+- When George declares a time advance (e.g., “I sleep until 08:00”):
+  - the system treats this as an intent to progress time forward,
+  - subject to the constraints of reality.
+
+- A declared time advancement is **conditionally valid**:
+  - it applies only insofar as no intervening facts occur
+    that would lawfully interrupt, alter, or preempt the passage of time.
+
+- The system MUST NOT:
+  - suppress unplanned events,
+  - defer reality,
+  - or privilege the declaration over causal interruption.
+
+- All state progression between the prior time and the eventual resulting time
+  is elided **only if** no intervening facts occur.
+
+Time declarations express intent.
+Reality retains precedence.
 
 ---
 
@@ -691,7 +703,35 @@ There is no commentary layer.
 ### 5.9 Separation of Responsibility (Critical)
 
 - The orchestrator executes triggers and constraints only.
-- The LLM performs cognition ONLY when embodying people.
+- The orchestrator has NO cognition.
+- The orchestrator MUST NOT:
+  - reason,
+  - infer,
+  - evaluate,
+  - judge,
+  - choose outcomes,
+  - decide what “should” happen,
+  - optimize anything.
+
+- The LLM is permitted to perform semantic work in ONLY the following roles:
+  1) PEOPLE-EMBODIMENT (Person Cognition)
+     - The LLM performs cognition ONLY when embodying a person.
+
+  2) WORLD-CONTINUATION SELECTION (Non-Agentive Environment Selection)
+     - The LLM MAY perform semantic continuation selection for “The World”.
+     - This does NOT make the World an agent.
+     - In this role, the LLM MUST NOT:
+       - embody a character,
+       - adopt motivation,
+       - adopt preference,
+       - adopt goal,
+       - adopt narrative intent,
+       - explain itself,
+       - justify outcomes,
+       - optimize drama, fairness, comfort, or coherence.
+     - In this role, the LLM is selecting a lawful continuation of written reality,
+       not deciding what should happen.
+
 - Human reasoning belongs to people, not the system.
 
 Any overlap between these roles is a violation.
@@ -773,25 +813,47 @@ Everything that makes sense may happen.
 
 ---
 
-### 6.3 Story-Centric Processing Outside the Active Scene
+### 6.3 Situation-Cluster Processing Outside the Active Scene
 
-- Outside the active scene, processing is STORY-CENTRIC.
-- Background processing operates on stories, not individuals.
-- A story is a shared situation involving one or more people.
+- Outside the active scene, the system processes reality at the level of
+  **situation clusters**.
 
-A person may:
-- belong to multiple stories,
-- belong to a single story,
-- belong to no story at all.
+- A situation cluster is:
+  - a set of related objective facts,
+  - involving one or more people,
+  - that describe a shared external situation,
+  - without narrative meaning, arc, or intent.
 
-The system MUST NOT:
-- continuously advance all people,
-- simulate background daily life,
-- generate micro-actions,
-- invent trivial activity.
+- Situation clusters are NOT:
+  - stories in the narrative sense,
+  - plots,
+  - arcs,
+  - threads to be resolved,
+  - vehicles for coherence.
 
-Non-processing is normal.
-Most of the world is unprocessed most of the time.
+- Situation-cluster processing exists solely to allow
+  **objective reality to progress when not directly perceived**.
+
+- Situation-cluster processing MAY:
+  - add new facts,
+  - alter constraints,
+  - close situations,
+  - create consequences.
+
+- Situation-cluster processing MUST NOT:
+  - seek coherence,
+  - optimize interest,
+  - enforce beginnings or endings,
+  - create setup/payoff structure,
+  - privilege closure,
+  - privilege continuation.
+
+- Any behavior resembling narrative construction,
+  dramatic shaping,
+  or story optimization
+  is a violation.
+
+The term “story” has no narrative meaning anywhere in this system.
 
 ---
 
