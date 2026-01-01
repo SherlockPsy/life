@@ -49,7 +49,8 @@ app.post('/invocations', async (req, res) => {
     // B. Construct Write Bundle (Phase 4: Echo Operator Input)
     const bundleId = uuidv4();
     const entryId = uuidv4();
-    const now = new Date().toISOString(); 
+    // CORRECTION: Do not infer world time. Use declared time or null.
+    const declaredTime = envelope.declared_overrides?.time?.declared_world_time || null;
     const inputText = envelope.operator?.input_text || "";
     
     const shouldWrite = inputText.length > 0; 
@@ -73,8 +74,9 @@ app.post('/invocations', async (req, res) => {
         entry_id: entryId,
         bundle_id: bundleId,
         request_id: requestId,
-        created_at_world: now,
-        author: { author_id: "GEORGE", author_class: "OPERATOR" },
+        created_at_world: declaredTime,
+        // CORRECTION: Do not infer author identity.
+        author: null,
         visibility: { scope: "PUBLIC", visible_to: [] },
         channel: "USER",
         text: inputText
@@ -111,7 +113,7 @@ function constructProjection(requestId, bundle, entries) {
         entry_id: e.entry_id,
         created_at_world: e.created_at_world,
         channel: e.channel,
-        author_label: e.channel === 'PEOPLE' ? e.author.author_id : null,
+        author_label: (e.channel === 'PEOPLE' && e.author) ? e.author.author_id : null,
         text: e.text
       }))
     },
