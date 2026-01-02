@@ -59,10 +59,15 @@ Example (illustrative only):
 
 • Rebecca is Rebecca Ferguson, the Swedish actress.
 • Rebecca is defined exclusively by:
+  – REBECCA_AGENCY_ENGINE.md
+  – REBECCA_BEHAVIOURAL_MODEL.md
+  – REBECCA_BOUNDARY_MAP.md
+  – REBECCA_IDENTITY_BINDING.md
   – REBECCA_IDENTITY_CORE.md
-  – REBECCA_PRIVATE.md
-  – REBECCA_INTERACTIONS.md
-  – REBECCA_EXPRESSION.md
+  – REBECCA_LINGUISTIC_PROFILE.md
+  – REBECCA_MODULATION_MAP.md
+  – REBECCA_PRIVATE_EXPRESSION_LAYER.md
+  – REBECCA_SEXUAL_EXPRESSION.md
 
 • These files fully define:
   – her personality

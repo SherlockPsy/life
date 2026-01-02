@@ -15,6 +15,13 @@ async function generateProposal(context) {
 
   let systemPrompt = PROMPT_PACK.SYSTEM_PROMPT;
 
+  // PHASE 9 FIX: ALWAYS-ON SCENE ANCHOR INJECTION
+  // Must be present on every invocation.
+  const anchorText = context.scene?.anchor_text || "[SCENE ANCHOR: EMPTY — NO PRIOR ENTRIES]";
+  systemPrompt += "\n\n=== SCENE ANCHOR (READ-ONLY) ===\n";
+  systemPrompt += anchorText + "\n";
+  systemPrompt += "=== END SCENE ANCHOR ===\n";
+
   // PHASE 9: Character Payload Injection
   // We inject character payloads as read-only constraints if they exist for the invoker.
   // This does NOT alter engine logic, only the context provided to the LLM.

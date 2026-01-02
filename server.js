@@ -88,8 +88,9 @@ app.post('/invocations', async (req, res) => {
       worldTime = await Engine3.advanceTime(client, advanceBy);
       timeDeclared = true;
     } else {
-      // No change, just read for the beat record
-      worldTime = await Engine3.getWorldTime(client);
+      // DEFAULT TICK: +1 per invocation if no override
+      worldTime = await Engine3.advanceTime(client, 1);
+      timeDeclared = false;
     }
 
     // C. Coordinate Beat (Engine 2)
@@ -99,6 +100,27 @@ app.post('/invocations', async (req, res) => {
     // PHASE 7: Engine 5 Rehydration Check
     // Check if we need to rehydrate context at this beat boundary.
     await Engine5.handleBeatBoundary(client, requestId, worldTime);
+
+    // PHASE 9 FIX: ALWAYS-ON SCENE ANCHOR
+    // 1. Try Engine5.getLatestAnchor
+    let anchorText = "[SCENE ANCHOR: EMPTY — NO PRIOR ENTRIES]";
+    const latestAnchor = await Engine5.getLatestAnchor(client);
+    
+    if (latestAnchor && latestAnchor.anchor_text) {
+      anchorText = latestAnchor.anchor_text;
+    } else {
+      // 2. Try latest entry text
+      // We need to query for the last entry if no anchor exists.
+      // Using a direct query here to avoid adding methods to Engine5 if not strictly needed, 
+      // but Engine5.getEntriesSince(0) might be too heavy if we just want the last one.
+      // Let's do a quick optimized query.
+      const lastEntryRes = await client.query(
+        'SELECT text FROM entries ORDER BY created_at_world DESC LIMIT 1'
+      );
+      if (lastEntryRes.rows.length > 0) {
+        anchorText = lastEntryRes.rows[0].text;
+      }
+    }
 
     // D. Construct Write Bundle (Phase 4: Echo Operator Input)
     const bundleId = uuidv4();
@@ -154,6 +176,9 @@ app.post('/invocations', async (req, res) => {
         text: inputText,
         channel: "USER"
       },
+      scene: {
+        anchor_text: anchorText
+      }
       // TODO: Add history/anchors when available
     };
 
