@@ -1,5 +1,6 @@
 const { v4: uuidv4 } = require('uuid');
 const PROMPT_PACK = require('./prompt_pack.json');
+const { loadCharacterPayload } = require('../../utils/character_payload_loader');
 
 // Configuration
 const API_KEY = process.env.DEEPSEEK_API_KEY || process.env.VENICE_API_KEY;
@@ -12,7 +13,25 @@ async function generateProposal(context) {
     return null;
   }
 
-  const systemPrompt = PROMPT_PACK.SYSTEM_PROMPT;
+  let systemPrompt = PROMPT_PACK.SYSTEM_PROMPT;
+
+  // PHASE 9: Character Payload Injection
+  // We inject character payloads as read-only constraints if they exist for the invoker.
+  // This does NOT alter engine logic, only the context provided to the LLM.
+  const invokerId = context.envelope?.invoker?.invoker_id;
+  if (invokerId) {
+    const payloads = loadCharacterPayload(invokerId);
+    if (payloads) {
+      // CLEAN INJECTION: No meta-instructions, just delimiters and content.
+      systemPrompt += "\n\n=== CHARACTER PAYLOADS ===\n";
+      
+      for (const [filename, content] of Object.entries(payloads)) {
+        systemPrompt += `\n--- FILE: ${filename} ---\n${content}\n`;
+      }
+      systemPrompt += "\n=== END CHARACTER PAYLOADS ===\n";
+    }
+  }
+
   const userContext = JSON.stringify(context, null, 2);
 
   try {
