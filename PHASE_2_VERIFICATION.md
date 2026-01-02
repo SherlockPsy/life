@@ -10,25 +10,16 @@
 - **Expectation:** Status 200, `debug.wrote` is false.
 
 ### 3. Execution Evidence (RAW)
-- **Timestamp:** 2026-01-02T22:13:07Z
+- **Timestamp:** 2026-01-02T22:22:01Z
 - **Command:**
 ```bash
-curl -i -X POST https://life-production-1b7b.up.railway.app/invocations \
-  -H "Content-Type: application/json" \
-  -d '{
-  "request_id": "req_phase2_silence_007",
-  "invoker": { "invoker_id": "user_1", "invoker_role": "INVOKER", "notes": null },
-  "operator": { "operator_id": "GEORGE", "input_text": "" },
-  "mode": { "kind": "BEAT", "client_intent": "silence_test" },
-  "declared_overrides": { "time": null, "pause_time": null },
-  "ui": { "stream_cursor": null, "client_timestamp_utc": null }
-}'
+curl -i -X POST https://life-production-1b7b.up.railway.app/invocations ...
 ```
 - **Response:**
 ```http
 HTTP/2 200 
 ...
-"debug":{"wrote":false,"bundle_id":"18fae4c3-f13b-4ca9-9861-71f...
+"debug":{"wrote":false,"bundle_id":"dcb045be-5145-48f4-bf1b-0b251e225...
 ```
 
 ### 4. Result Classification

@@ -9,7 +9,7 @@
 - **Section 1:** "request_id MUST be present... operator_id MUST be GEORGE."
 
 ### 3. Execution Evidence (RAW)
-- **Timestamp:** 2026-01-02T22:15:00Z
+- **Timestamp:** 2026-01-02T22:21:50Z
 - **Command:**
 ```bash
 curl -i -X POST https://life-production-1b7b.up.railway.app/invocations ...

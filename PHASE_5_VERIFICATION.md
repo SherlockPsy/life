@@ -8,11 +8,7 @@
 - **Expectation:** Status 200, `pocket.clock.world_time` is null.
 
 ### 3. Execution Evidence (RAW)
-- **Timestamp:** 2026-01-02T22:13:35Z
-- **Command:**
-```bash
-curl -i -X POST https://life-production-1b7b.up.railway.app/invocations ...
-```
+- **Timestamp:** 2026-01-02T22:22:32Z
 - **Response:**
 ```http
 HTTP/2 200 
