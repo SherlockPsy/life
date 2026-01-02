@@ -25,6 +25,16 @@ app.post('/invocations', async (req, res) => {
     return res.status(400).json({ error: "Missing request_id" });
   }
 
+  // CONTRACT ENFORCEMENT: Operator ID must be GEORGE
+  if (envelope.operator?.operator_id !== 'GEORGE') {
+    return res.status(400).json({ error: "Invalid operator_id", details: "Must be GEORGE" });
+  }
+
+  // CONTRACT ENFORCEMENT: Invoker ID cannot be GEORGE
+  if (envelope.invoker?.invoker_id === 'GEORGE') {
+    return res.status(400).json({ error: "Invalid invoker_id", details: "Cannot be GEORGE" });
+  }
+
   const client = await pool.connect();
 
   let debugPayload = null;

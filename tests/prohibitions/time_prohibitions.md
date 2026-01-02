@@ -30,6 +30,7 @@ curl -X POST https://life-production.up.railway.app/invocations \
 
 ## 2. Control: Explicit Time Jump (Allowed)
 **Rule:** Explicit overrides ARE allowed.
+**Constraint:** `declared_world_time` MUST be a non-negative integer (ticks). ISO strings are invalid.
 
 **Test Scenario:**
 ```bash
@@ -41,7 +42,7 @@ curl -X POST https://life-production.up.railway.app/invocations \
   "operator": { "operator_id": "GEORGE", "input_text": "Time passes." },
   "mode": { "kind": "BEAT", "client_intent": null },
   "declared_overrides": {
-    "time": { "declared_world_time": "2026-01-02T10:00:00Z", "timezone": null },
+    "time": { "declared_world_time": 1000, "timezone": null },
     "pause_time": false
   },
   "ui": { "stream_cursor": null, "client_timestamp_utc": null }
@@ -50,4 +51,4 @@ curl -X POST https://life-production.up.railway.app/invocations \
 
 **Expected Result:**
 - **HTTP Status:** 200 OK
-- **Response Body:** `pocket.clock.world_time` matches "2026-01-02T10:00:00Z".
+- **Response Body:** `pocket.clock.world_time` matches `1000`.
