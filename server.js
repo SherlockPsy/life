@@ -230,6 +230,7 @@ app.post('/invocations', async (req, res) => {
     } else if (proposal && proposal.type === 'tool_request') {
       // 3. Validate Tool (Engine 7)
       // Engine 7 does not exist historically.
+      // FORCE DEPLOY: Ensure this message is updated in production.
       console.log("ENGINE 9: Tool Request emitted but Engine 7 does not exist.");
       extraDebug = { error: "tool_request unsupported because Engine 7 does not exist historically" };
     } else {
